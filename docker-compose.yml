@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    # Esta imagem já vem com o PostgreSQL + a extensão pgvector instalada
+    image: pgvector/pgvector:pg16
+    container_name: agency_os_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123 # Mude para produção
+      POSTGRES_DB: agency_os
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: agency_os_api
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://admin:password123@db:5432/agency_os
+      OPENAI_API_KEY: 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
+
+volumes:
+  postgres_data:

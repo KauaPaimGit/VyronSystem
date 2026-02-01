@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+streamlit
+pydantic
+pydantic-settings
+email-validator
+requests
+sqlalchemy
+psycopg2-binary
+pgvector
+python-dotenv
+openai
+fpdf2
+plotly
+pandas
