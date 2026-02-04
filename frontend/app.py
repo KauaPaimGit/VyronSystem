@@ -103,6 +103,116 @@ def make_request(method: str, endpoint: str, **kwargs):
     except Exception as e:
         return None, f"❌ Erro inesperado: {type(e).__name__} - {str(e)}"
 
+
+# ============================================
+# SISTEMA DE AUTENTICAÇÃO
+# ============================================
+
+def check_authentication():
+    """
+    Verifica se o usuário está autenticado.
+    Retorna True se autenticado, False caso contrário.
+    """
+    return st.session_state.get("authenticated", False)
+
+
+def show_login_page():
+    """
+    Exibe a página de login
+    """
+    # Estilo customizado para a página de login
+    st.markdown("""
+        <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 2rem;
+            background-color: #f0f2f6;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .login-header {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f77b4;
+            margin-bottom: 2rem;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Container centralizado
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.markdown('<div class="login-header">🔐 Vyron System</div>', unsafe_allow_html=True)
+        st.markdown("### Login")
+        
+        # Formulário de login
+        with st.form("login_form"):
+            username = st.text_input("👤 Usuário", placeholder="Digite seu usuário")
+            password = st.text_input("🔒 Senha", type="password", placeholder="Digite sua senha")
+            submit = st.form_submit_button("🚀 Entrar", use_container_width=True)
+            
+            if submit:
+                if not username or not password:
+                    st.error("❌ Por favor, preencha usuário e senha")
+                else:
+                    # Faz requisição para o backend
+                    with st.spinner("🔄 Autenticando..."):
+                        data, error = make_request(
+                            'POST', 
+                            '/login', 
+                            json={"username": username, "password": password}
+                        )
+                    
+                    if data and not error:
+                        # Login bem-sucedido
+                        st.session_state["authenticated"] = True
+                        st.session_state["username"] = data.get("username")
+                        st.session_state["user_role"] = data.get("user_role")
+                        st.session_state["token"] = data.get("token")
+                        st.success("✅ Login realizado com sucesso!")
+                        st.rerun()
+                    else:
+                        # Falha no login
+                        st.error(f"❌ {error}")
+        
+        st.markdown("---")
+        st.info("""
+            **Primeiro acesso?**
+            
+            Execute o script `create_admin.py` para criar seu usuário administrador.
+            
+            ```bash
+            python create_admin.py
+            ```
+        """)
+
+
+def logout():
+    """
+    Realiza logout limpando o session state
+    """
+    for key in ["authenticated", "username", "user_role", "token"]:
+        if key in st.session_state:
+            del st.session_state[key]
+    st.rerun()
+
+
+# ============================================
+# VERIFICAÇÃO DE AUTENTICAÇÃO
+# ============================================
+
+# Verifica se o usuário está autenticado
+if not check_authentication():
+    # Não autenticado - mostra apenas a tela de login
+    show_login_page()
+    st.stop()  # Para a execução aqui
+
+# Se chegou aqui, o usuário está autenticado
+# Continua com a aplicação normal
+
 # ============================================
 # ESTILO CUSTOMIZADO
 # ============================================
@@ -131,6 +241,19 @@ if 'chat_history' not in st.session_state:
 # Sidebar para navegação
 st.sidebar.title("🚀 Vyron System")
 st.sidebar.markdown("---")
+
+# Informações do usuário logado
+st.sidebar.info(f"""
+    👤 **Usuário:** {st.session_state.get('username', 'N/A')}  
+    🎭 **Perfil:** {st.session_state.get('user_role', 'N/A').upper()}
+""")
+
+# Botão de logout
+if st.sidebar.button("🚪 Sair", use_container_width=True):
+    logout()
+
+st.sidebar.markdown("---")
+
 page = st.sidebar.radio(
     "Navegação",
     ["📊 Dashboard Financeiro", "🤖 Agency Brain", "✍️ Lançamentos Manuais"]

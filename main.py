@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime, date
 from decimal import Decimal
+from pydantic import BaseModel
 from app.database import get_db, engine
 from app import models, schemas
 from app.services import (
@@ -16,6 +17,7 @@ from app.services import (
     _execute_add_expense,
     _execute_add_marketing_stats
 )
+from app.auth import authenticate_user
 
 # ============================================
 # CRIA AS TABELAS NO BANCO DE DADOS (Se não existirem)
@@ -46,6 +48,61 @@ app.add_middleware(
 @app.get("/")
 def health_check():
     return {"status": "running", "service": "Vyron System API"}
+
+
+# ============================================
+# ROTAS: AUTENTICAÇÃO
+# ============================================
+
+class LoginRequest(BaseModel):
+    """Schema para requisição de login"""
+    username: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    """Schema para resposta de login"""
+    message: str
+    user_role: str
+    username: str
+    token: str
+
+
+@app.post("/login", response_model=LoginResponse)
+def login(credentials: LoginRequest, db: Session = Depends(get_db)):
+    """
+    Endpoint de autenticação - Login
+    
+    Recebe username e password, verifica as credenciais e retorna informações do usuário.
+    
+    Args:
+        credentials: Objeto com username e password
+        db: Sessão do banco de dados
+        
+    Returns:
+        LoginResponse: Informações do usuário autenticado
+        
+    Raises:
+        HTTPException 401: Se credenciais inválidas
+    """
+    # Autentica o usuário
+    user = authenticate_user(db, credentials.username, credentials.password)
+    
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Credenciais inválidas. Verifique seu usuário e senha."
+        )
+    
+    # Retorna sucesso com informações do usuário
+    # NOTA: Em produção, use JWT real (PyJWT) ao invés de "fake-jwt-token"
+    return LoginResponse(
+        message="Login realizado com sucesso",
+        user_role=user.role,
+        username=user.username,
+        token=f"fake-jwt-token-{user.id}"  # Em produção, use JWT real
+    )
+
 
 @app.get("/db-test")
 def test_database_connection(db: Session = Depends(get_db)):

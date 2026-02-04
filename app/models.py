@@ -19,6 +19,26 @@ from app.database import Base
 from app.database import engine
 
 # ============================================
+# MÓDULO: AUTENTICAÇÃO
+# ============================================
+
+class User(Base):
+    """Tabela de Usuários para Autenticação"""
+    __tablename__ = "users"
+    
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    username: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(50), nullable=False, default='user')  # 'admin', 'user', 'manager', etc.
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+
+# ============================================
 # MÓDULO: CRM INTELIGENTE
 # ============================================
 
