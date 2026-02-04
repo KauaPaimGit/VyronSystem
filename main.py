@@ -332,6 +332,7 @@ def list_projects(
             description=None,  # Não temos no ORM
             project_type=p.type,  # Mapeia type -> project_type
             value=p.contract_value,  # Mapeia contract_value -> value
+            status=p.status,  # Adiciona status do Kanban
             start_date=p.start_date,
             end_date=p.end_date,
             created_at=p.created_at
@@ -358,10 +359,66 @@ def get_project(project_id: str, db: Session = Depends(get_db)):
         description=None,  # Não temos no ORM
         project_type=project.type,  # Mapeia type -> project_type
         value=project.contract_value,  # Mapeia contract_value -> value
+        status=project.status,  # Adiciona status do Kanban
         start_date=project.start_date,
         end_date=project.end_date,
         created_at=project.created_at
     )
+
+
+class UpdateStatusRequest(BaseModel):
+    """Schema para atualização de status"""
+    status: str
+
+
+@app.patch("/projects/{project_id}/status")
+def update_project_status(project_id: str, request: UpdateStatusRequest, db: Session = Depends(get_db)):
+    """
+    Atualiza o status de um projeto no sistema Kanban.
+    
+    Status válidos:
+    - Negociação
+    - Em Produção
+    - Concluído
+    
+    Args:
+        project_id: UUID do projeto
+        request: Objeto com o novo status
+        db: Sessão do banco de dados
+        
+    Returns:
+        Mensagem de sucesso e novo status
+        
+    Raises:
+        HTTPException 404: Projeto não encontrado
+        HTTPException 400: Status inválido
+    """
+    status = request.status
+    # Valida o status
+    valid_statuses = ['Negociação', 'Em Produção', 'Concluído']
+    if status not in valid_statuses:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Status inválido. Use um dos seguintes: {', '.join(valid_statuses)}"
+        )
+    
+    # Busca o projeto
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    
+    # Atualiza o status
+    project.status = status
+    db.commit()
+    db.refresh(project)
+    
+    return {
+        "message": "Status atualizado com sucesso",
+        "project_id": str(project.id),
+        "project_name": project.name,
+        "new_status": project.status
+    }
 
 
 # ============================================

@@ -105,6 +105,7 @@ class ProjectResponse(ProjectBase):
     id: UUID
     client_id: UUID
     client_name: Optional[str] = None  # Nome do cliente para facilitar exibição
+    status: Optional[str] = None  # Status do projeto no Kanban
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)

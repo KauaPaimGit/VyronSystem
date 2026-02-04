@@ -43,7 +43,7 @@ def make_request(method: str, endpoint: str, **kwargs):
     - Logs amigáveis para o usuário
     
     Args:
-        method: 'GET', 'POST', 'PUT', 'DELETE'
+        method: 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'
         endpoint: '/projects/', '/ai/chat', etc.
         **kwargs: params, json, data, files, etc.
         
@@ -71,6 +71,8 @@ def make_request(method: str, endpoint: str, **kwargs):
             response = requests.post(url, **kwargs)
         elif method.upper() == 'PUT':
             response = requests.put(url, **kwargs)
+        elif method.upper() == 'PATCH':
+            response = requests.patch(url, **kwargs)
         elif method.upper() == 'DELETE':
             response = requests.delete(url, **kwargs)
         else:
@@ -256,7 +258,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navegação",
-    ["📊 Dashboard Financeiro", "🤖 Agency Brain", "✍️ Lançamentos Manuais"]
+    ["📊 Dashboard Financeiro", "📋 Gestão Visual", "🤖 Agency Brain", "✍️ Lançamentos Manuais"]
 )
 
 st.sidebar.markdown("---")
@@ -789,6 +791,206 @@ elif page == "🤖 Agency Brain":
             - "Quais são os projetos ativos?"
             - "Me fale sobre o cliente X"
             """)
+
+
+# ============================================
+# PÁGINA 2: GESTÃO VISUAL (KANBAN)
+# ============================================
+
+elif page == "📋 Gestão Visual":
+    st.markdown('<p class="main-header">📋 Gestão Visual - Kanban de Projetos</p>', unsafe_allow_html=True)
+    st.markdown("**Arraste projetos entre as fases do fluxo de trabalho**")
+    
+    # Função auxiliar para atualizar o status de um projeto
+    def update_project_status(project_id, new_status):
+        """Atualiza o status de um projeto via API"""
+        with st.spinner(f"🔄 Movendo projeto para {new_status}..."):
+            data, error = make_request(
+                'PATCH',
+                f'/projects/{project_id}/status',
+                json={'status': new_status}
+            )
+        
+        if data and not error:
+            st.success(f"✅ Projeto movido para {new_status}!")
+            import time
+            time.sleep(1)  # Pausa para o usuário ver a mensagem
+            st.rerun()
+        else:
+            st.error(f"❌ Erro ao atualizar: {error}")
+            st.stop()  # Para a execução para mostrar o erro
+    
+    # Buscar todos os projetos
+    with st.spinner("🔄 Carregando projetos..."):
+        projects, error = get_projects_list(limit=100)
+    
+    if error:
+        st.error(error)
+        if "Conexão" in error:
+            st.info("💡 Inicie o backend com: `uvicorn main:app --reload`")
+    elif not projects or len(projects) == 0:
+        st.warning("⚠️ Nenhum projeto encontrado no sistema")
+        st.info("💡 Crie seu primeiro projeto em **✍️ Lançamentos Manuais** → **Novo Projeto**")
+    else:
+        st.success(f"✅ {len(projects)} projeto(s) encontrado(s)")
+        
+        # Agrupar projetos por status
+        projetos_por_fase = {
+            'Negociação': [],
+            'Em Produção': [],
+            'Concluído': []
+        }
+        
+        for project in projects:
+            # Garante que o projeto tem um status válido
+            status = project.get('status', 'Negociação')
+            if status not in projetos_por_fase:
+                # Se o status não for um dos 3, coloca em Negociação por padrão
+                status = 'Negociação'
+            
+            projetos_por_fase[status].append(project)
+        
+        # Criar 3 colunas para o Kanban
+        col_negociacao, col_producao, col_concluido = st.columns(3)
+        
+        # ============================================
+        # COLUNA 1: NEGOCIAÇÃO 🟧
+        # ============================================
+        with col_negociacao:
+            st.markdown("### 🟧 Negociação")
+            st.markdown(f"**{len(projetos_por_fase['Negociação'])} projeto(s)**")
+            st.markdown("---")
+            
+            if projetos_por_fase['Negociação']:
+                for project in projetos_por_fase['Negociação']:
+                    with st.container(border=True):
+                        st.markdown(f"**📋 {project['name']}**")
+                        st.caption(f"👤 Cliente: {project.get('client_name', 'N/A')}")
+                        
+                        # Formatar valor como moeda brasileira
+                        valor = project.get('value', 0)
+                        if valor:
+                            valor_float = float(valor) if isinstance(valor, str) else valor
+                            st.markdown(f"💰 **R$ {valor_float:,.2f}**")
+                        
+                        # Botão para mover para Produção
+                        if st.button(
+                            "▶️ Iniciar Produção",
+                            key=f"start_{project['id']}",
+                            use_container_width=True,
+                            type="primary"
+                        ):
+                            update_project_status(project['id'], 'Em Produção')
+            else:
+                st.info("Nenhum projeto nesta fase")
+        
+        # ============================================
+        # COLUNA 2: EM PRODUÇÃO 🟦
+        # ============================================
+        with col_producao:
+            st.markdown("### 🟦 Em Produção")
+            st.markdown(f"**{len(projetos_por_fase['Em Produção'])} projeto(s)**")
+            st.markdown("---")
+            
+            if projetos_por_fase['Em Produção']:
+                for project in projetos_por_fase['Em Produção']:
+                    with st.container(border=True):
+                        st.markdown(f"**📋 {project['name']}**")
+                        st.caption(f"👤 Cliente: {project.get('client_name', 'N/A')}")
+                        
+                        # Formatar valor como moeda brasileira
+                        valor = project.get('value', 0)
+                        if valor:
+                            valor_float = float(valor) if isinstance(valor, str) else valor
+                            st.markdown(f"💰 **R$ {valor_float:,.2f}**")
+                        
+                        # Botões de ação
+                        col_btn1, col_btn2 = st.columns(2)
+                        
+                        with col_btn1:
+                            if st.button(
+                                "⬅️ Voltar",
+                                key=f"back_{project['id']}",
+                                use_container_width=True
+                            ):
+                                update_project_status(project['id'], 'Negociação')
+                        
+                        with col_btn2:
+                            if st.button(
+                                "✅ Concluir",
+                                key=f"complete_{project['id']}",
+                                use_container_width=True,
+                                type="primary"
+                            ):
+                                update_project_status(project['id'], 'Concluído')
+            else:
+                st.info("Nenhum projeto nesta fase")
+        
+        # ============================================
+        # COLUNA 3: CONCLUÍDO 🟩
+        # ============================================
+        with col_concluido:
+            st.markdown("### 🟩 Concluído")
+            st.markdown(f"**{len(projetos_por_fase['Concluído'])} projeto(s)**")
+            st.markdown("---")
+            
+            if projetos_por_fase['Concluído']:
+                for project in projetos_por_fase['Concluído']:
+                    with st.container(border=True):
+                        st.markdown(f"**📋 {project['name']}**")
+                        st.caption(f"👤 Cliente: {project.get('client_name', 'N/A')}")
+                        
+                        # Formatar valor como moeda brasileira
+                        valor = project.get('value', 0)
+                        if valor:
+                            valor_float = float(valor) if isinstance(valor, str) else valor
+                            st.markdown(f"💰 **R$ {valor_float:,.2f}**")
+                        
+                        # Mostrar badge de concluído
+                        st.success("✅ Finalizado")
+                        
+                        # Botão para reabrir (caso necessário)
+                        if st.button(
+                            "🔄 Reabrir",
+                            key=f"reopen_{project['id']}",
+                            use_container_width=True
+                        ):
+                            update_project_status(project['id'], 'Em Produção')
+            else:
+                st.info("Nenhum projeto nesta fase")
+        
+        # Estatísticas resumidas
+        st.markdown("---")
+        st.markdown("### 📊 Estatísticas")
+        
+        col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
+        
+        with col_stat1:
+            st.metric(
+                label="Total de Projetos",
+                value=len(projects)
+            )
+        
+        with col_stat2:
+            st.metric(
+                label="Em Negociação",
+                value=len(projetos_por_fase['Negociação']),
+                delta=None
+            )
+        
+        with col_stat3:
+            st.metric(
+                label="Em Produção",
+                value=len(projetos_por_fase['Em Produção']),
+                delta=None
+            )
+        
+        with col_stat4:
+            st.metric(
+                label="Concluídos",
+                value=len(projetos_por_fase['Concluído']),
+                delta=None
+            )
 
 
 # ============================================
