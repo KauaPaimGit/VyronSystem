@@ -13,4 +13,6 @@ openai
 fpdf2
 plotly
 pandas
+openpyxl
 passlib[bcrypt]
+google-search-results

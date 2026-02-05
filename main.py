@@ -7,6 +7,7 @@ from typing import List
 from datetime import datetime, date
 from decimal import Decimal
 from pydantic import BaseModel
+from typing import Optional
 from app.database import get_db, engine
 from app import models, schemas
 from app.services import (
@@ -15,7 +16,9 @@ from app.services import (
     generate_project_pdf,
     _execute_create_project,
     _execute_add_expense,
-    _execute_add_marketing_stats
+    _execute_add_marketing_stats,
+    search_business,
+    export_businesses_to_excel
 )
 from app.auth import authenticate_user
 
@@ -1241,3 +1244,230 @@ def get_client_interactions_endpoint(client_id: str, limit: int = 10, db: Sessio
         "total": len(interactions),
         "interactions": interactions
     }
+
+
+# ============================================
+# ROTAS: RADAR DE VENDAS (PROSPECÇÃO ATIVA)
+# ============================================
+
+class RadarSearchRequest(BaseModel):
+    """Schema para busca de empresas"""
+    query: str
+    location: str
+    limit: int = 20
+
+
+class RadarConvertRequest(BaseModel):
+    """Schema para converter empresa em projeto"""
+    business_name: str
+    business_type: str
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    address: Optional[str] = None
+    rating: Optional[float] = None
+    reviews: int = 0
+    project_value: float = 5000.0
+
+
+@app.get("/radar/search")
+def search_businesses(query: str, location: str, limit: int = 20):
+    """
+    Busca empresas usando Google Maps via SerpApi
+    
+    Args:
+        query: Termo de busca (ex: "Pizzaria", "Academia")
+        location: Localização (ex: "Passos, MG", "São Paulo, SP")
+        limit: Número máximo de resultados (padrão: 20)
+        
+    Returns:
+        Lista de empresas encontradas
+        
+    Raises:
+        HTTPException 400: Parâmetros inválidos
+        HTTPException 500: Erro na busca
+    """
+    try:
+        if not query or not location:
+            raise HTTPException(
+                status_code=400,
+                detail="Parâmetros 'query' e 'location' são obrigatórios"
+            )
+        
+        businesses = search_business(query, location, limit)
+        
+        return {
+            "success": True,
+            "query": query,
+            "location": location,
+            "total": len(businesses),
+            "businesses": businesses
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ImportError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Serviço de busca não disponível: {str(e)}"
+        )
+    except Exception as e:
+        import traceback
+        error_detail = f"Erro ao buscar empresas: {str(e)}\n\nTraceback: {traceback.format_exc()}"
+        print(error_detail)  # Log no console
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar empresas: {str(e)}")
+
+
+@app.get("/radar/export")
+def export_radar_results(query: str, location: str, limit: int = 20):
+    """
+    Exporta resultados da busca para Excel
+    
+    Args:
+        query: Termo de busca
+        location: Localização
+        limit: Número máximo de resultados
+        
+    Returns:
+        Arquivo Excel para download
+    """
+    try:
+        # Busca as empresas
+        businesses = search_business(query, location, limit)
+        
+        if not businesses:
+            raise HTTPException(
+                status_code=404,
+                detail="Nenhuma empresa encontrada para exportar"
+            )
+        
+        # Gera o Excel
+        excel_file = export_businesses_to_excel(businesses, query, location)
+        
+        # Define o nome do arquivo
+        filename = f"Radar_Vendas_{query.replace(' ', '_')}_{location.replace(' ', '_')}.xlsx"
+        
+        # Retorna o arquivo
+        return Response(
+            content=excel_file.getvalue(),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao exportar: {str(e)}"
+        )
+
+
+@app.post("/radar/convert")
+def convert_business_to_project(request: RadarConvertRequest, db: Session = Depends(get_db)):
+    """
+    Converte uma empresa encontrada em um projeto no Kanban
+    
+    Args:
+        request: Dados da empresa
+        db: Sessão do banco de dados
+        
+    Returns:
+        Dados do projeto criado
+        
+    Raises:
+        HTTPException 400: Dados inválidos
+        HTTPException 500: Erro ao criar projeto
+    """
+    try:
+        from uuid import uuid4
+        from datetime import date
+        
+        # Verifica se o cliente já existe
+        client = db.query(models.Client).filter(
+            models.Client.name == request.business_name
+        ).first()
+        
+        # Se não existe, cria o cliente
+        if not client:
+            client = models.Client(
+                id=uuid4(),
+                name=request.business_name,
+                company_name=request.business_name,
+                email=f"contato@{request.business_name.lower().replace(' ', '')}.com",  # Email placeholder
+                phone=request.phone,
+                status='lead',
+                source='radar_serpapi',
+                created_at=datetime.utcnow()
+            )
+            db.add(client)
+            db.flush()  # Garante que o ID do cliente foi gerado
+        
+        # Monta descrição do projeto
+        description_parts = [
+            f"🎯 Lead capturado via Radar de Vendas",
+            f"📊 Tipo: {request.business_type}",
+            ""
+        ]
+        
+        if request.phone:
+            description_parts.append(f"📞 {request.phone}")
+        if request.website:
+            description_parts.append(f"🌐 {request.website}")
+        if request.address:
+            description_parts.append(f"📍 {request.address}")
+        if request.rating:
+            stars = "⭐" * int(request.rating)
+            description_parts.append(f"{stars} {request.rating}/5 ({request.reviews} avaliações)")
+        
+        description = "\n".join(description_parts)
+        
+        # Cria o projeto
+        project = models.Project(
+            id=uuid4(),
+            client_id=client.id,
+            name=f"Prospecção: {request.business_name}",
+            type='prospection',
+            category='vendas',
+            status='Negociação',  # Vai direto para o Kanban
+            contract_value=Decimal(str(request.project_value)),
+            start_date=date.today(),
+            is_recurrent=False,
+            created_at=datetime.utcnow()
+        )
+        
+        db.add(project)
+        
+        # Cria uma interação registrando a prospecção
+        interaction = models.Interaction(
+            id=uuid4(),
+            client_id=client.id,
+            type='system_log',
+            subject=f"Lead capturado via Radar",
+            content=description,
+            interaction_date=datetime.utcnow(),
+            created_at=datetime.utcnow()
+        )
+        
+        db.add(interaction)
+        db.commit()
+        db.refresh(project)
+        
+        return {
+            "success": True,
+            "message": f"Lead '{request.business_name}' capturado com sucesso!",
+            "project_id": str(project.id),
+            "project_name": project.name,
+            "client_id": str(client.id),
+            "client_name": client.name,
+            "status": project.status,
+            "value": float(project.contract_value)
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao criar projeto: {str(e)}"
+        )

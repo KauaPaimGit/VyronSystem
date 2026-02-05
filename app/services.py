@@ -1260,3 +1260,130 @@ async def analyze_sentiment(text: str) -> float:
         return 0.0  # Neutro como fallback
 """
 
+
+# ============================================
+# RADAR DE VENDAS (PROSPECÇÃO ATIVA)
+# ============================================
+
+def search_business(query: str, location: str, limit: int = 20) -> List[dict]:
+    """
+    Busca empresas usando Google Maps via SerpApi
+    
+    Args:
+        query: Termo de busca (ex: "Pizzaria", "Academia")
+        location: Localização (ex: "Passos, MG", "São Paulo, SP")
+        limit: Número máximo de resultados (padrão: 20)
+        
+    Returns:
+        Lista de dicionários com dados das empresas
+    """
+    try:
+        from serpapi import GoogleSearch
+    except ImportError:
+        raise ImportError("Biblioteca google-search-results não instalada. Execute: pip install google-search-results")
+    
+    api_key = os.getenv("SERPAPI_KEY")
+    if not api_key:
+        raise ValueError(
+            "SERPAPI_KEY não configurada. "
+            "Adicione no .env: SERPAPI_KEY=sua_chave_aqui"
+        )
+    
+    # Monta a query completa
+    search_query = f"{query} in {location}"
+    
+    # Parâmetros da busca
+    params = {
+        "engine": "google_maps",
+        "q": search_query,
+        "type": "search",
+        "api_key": api_key,
+        "hl": "pt-br",
+        "gl": "br"
+    }
+    
+    try:
+        # Executa a busca
+        search = GoogleSearch(params)
+        results = search.get_dict()
+        
+        # Extrai os resultados locais
+        local_results = results.get("local_results", [])
+        
+        if not local_results:
+            return []
+        
+        # Formata os resultados
+        businesses = []
+        for idx, result in enumerate(local_results[:limit]):
+            business = {
+                "name": result.get("title", "Nome não disponível"),
+                "address": result.get("address", "Endereço não disponível"),
+                "phone": result.get("phone", None),
+                "website": result.get("website", None),
+                "rating": result.get("rating", None),
+                "reviews": result.get("reviews", 0),
+                "type": result.get("type", "Negócio Local"),
+                "position": idx + 1,
+                "place_id": result.get("place_id", None),
+                "gps_coordinates": result.get("gps_coordinates", None),
+                "service_options": result.get("service_options", None),
+                "hours": result.get("hours", None)
+            }
+            businesses.append(business)
+        
+        return businesses
+        
+    except Exception as e:
+        raise Exception(f"Erro ao buscar empresas: {str(e)}")
+
+
+def export_businesses_to_excel(businesses: List[dict], query: str, location: str) -> io.BytesIO:
+    """
+    Exporta lista de empresas para arquivo Excel
+    
+    Args:
+        businesses: Lista de empresas do radar
+        query: Termo de busca usado
+        location: Localização da busca
+        
+    Returns:
+        BytesIO: Arquivo Excel em memória
+    """
+    import pandas as pd
+    
+    # Prepara os dados para o DataFrame
+    data = []
+    for business in businesses:
+        data.append({
+            'Posição': business.get('position', ''),
+            'Nome': business.get('name', ''),
+            'Tipo': business.get('type', ''),
+            'Telefone': business.get('phone', ''),
+            'Website': business.get('website', ''),
+            'Endereço': business.get('address', ''),
+            'Avaliação': business.get('rating', ''),
+            'Avaliações': business.get('reviews', 0),
+            'Horário': business.get('hours', '')
+        })
+    
+    # Cria o DataFrame
+    df = pd.DataFrame(data)
+    
+    # Cria o arquivo Excel em memória
+    output = io.BytesIO()
+    
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        # Escreve os dados
+        df.to_excel(writer, sheet_name='Empresas', index=False)
+        
+        # Adiciona uma planilha com informações da busca
+        info_df = pd.DataFrame({
+            'Informação': ['Busca', 'Localização', 'Total de Resultados', 'Data da Busca'],
+            'Valor': [query, location, len(businesses), datetime.now().strftime('%d/%m/%Y %H:%M')]
+        })
+        info_df.to_excel(writer, sheet_name='Info da Busca', index=False)
+    
+    output.seek(0)
+    return output
+

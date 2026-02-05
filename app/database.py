@@ -21,7 +21,7 @@ DATABASE_URL = os.getenv(
 # Engine com configurações otimizadas
 engine = create_engine(
     DATABASE_URL,
-    echo=True,  # Log de queries SQL (desabilite em produção)
+    echo=False,  # Desabilitado para logs limpos - apenas erros aparecerão
     pool_pre_ping=True,  # Verifica conexão antes de usar
     pool_size=10,  # Tamanho do pool de conexões
     max_overflow=20,  # Conexões extras permitidas

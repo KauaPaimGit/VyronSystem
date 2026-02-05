@@ -258,7 +258,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navegação",
-    ["📊 Dashboard Financeiro", "📋 Gestão Visual", "🤖 Agency Brain", "✍️ Lançamentos Manuais"]
+    ["📊 Dashboard Financeiro", "📋 Gestão Visual", "📡 Radar de Vendas", "🤖 Agency Brain", "✍️ Lançamentos Manuais"]
 )
 
 st.sidebar.markdown("---")
@@ -678,6 +678,266 @@ if page == "📊 Dashboard Financeiro":
                         st.warning(f"⚠️ {timeline_error}")
                 else:
                     st.info("ℹ️ Não foi possível identificar o cliente deste projeto.")
+
+
+# ============================================
+# PÁGINA: RADAR DE VENDAS (PROSPECÇÃO ATIVA)
+# ============================================
+
+elif page == "📡 Radar de Vendas":
+    st.markdown('<p class="main-header">📡 Radar de Vendas - Prospecção Ativa</p>', unsafe_allow_html=True)
+    st.markdown("**Busque empresas no Google Maps e converta em leads automaticamente**")
+    
+    # Formulário de busca
+    st.markdown("### 🔍 Buscar Empresas")
+    
+    col1, col2, col3 = st.columns([3, 3, 1])
+    
+    with col1:
+        search_query = st.text_input(
+            "🎯 Nicho / Tipo de Negócio",
+            placeholder="Ex: Pizzaria, Academia, Salão de Beleza",
+            help="Digite o tipo de negócio que você quer prospectar"
+        )
+    
+    with col2:
+        search_location = st.text_input(
+            "📍 Cidade / Localização",
+            placeholder="Ex: Passos, MG",
+            help="Digite a cidade onde deseja buscar"
+        )
+    
+    with col3:
+        st.markdown("<br>", unsafe_allow_html=True)
+        search_button = st.button("🔍 Escanear", type="primary", use_container_width=True)
+    
+    # Inicializa histórico e resultados no session_state
+    if 'radar_results' not in st.session_state:
+        st.session_state.radar_results = None
+    
+    if 'radar_history' not in st.session_state:
+        st.session_state.radar_history = []
+    
+    # Realiza a busca
+    if search_button:
+        if not search_query or not search_location:
+            st.error("❌ Preencha o nicho e a localização para buscar")
+        else:
+            with st.spinner(f"🔄 Escaneando '{search_query}' em '{search_location}'..."):
+                data, error = make_request(
+                    'GET',
+                    '/radar/search',
+                    params={
+                        'query': search_query,
+                        'location': search_location,
+                        'limit': 20
+                    }
+                )
+            
+            if data and not error:
+                st.session_state.radar_results = data
+                
+                # Adiciona ao histórico
+                from datetime import datetime
+                history_entry = {
+                    'query': search_query,
+                    'location': search_location,
+                    'total': data['total'],
+                    'timestamp': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
+                    'data': data
+                }
+                st.session_state.radar_history.insert(0, history_entry)  # Adiciona no início
+                
+                # Limita o histórico a 10 buscas
+                if len(st.session_state.radar_history) > 10:
+                    st.session_state.radar_history = st.session_state.radar_history[:10]
+                
+                st.success(f"✅ {data['total']} empresa(s) encontrada(s)!")
+            else:
+                st.error(f"❌ {error}")
+                if "SERPAPI_KEY" in str(error):
+                    st.info("""
+                        💡 **Como configurar:**
+                        1. Crie uma conta em https://serpapi.com
+                        2. Copie sua API Key
+                        3. Adicione no arquivo .env: `SERPAPI_KEY=sua_chave_aqui`
+                        4. Reinicie o backend
+                    """)
+    
+    # Exibe histórico de buscas (antes dos resultados)
+    if st.session_state.radar_history:
+        st.markdown("---")
+        st.markdown("### 📜 Histórico de Buscas")
+        
+        col_history, col_clear = st.columns([4, 1])
+        
+        with col_clear:
+            if st.button("🗑️ Limpar Histórico", use_container_width=True):
+                st.session_state.radar_history = []
+                st.rerun()
+        
+        # Exibe as últimas buscas em um expander
+        for idx, entry in enumerate(st.session_state.radar_history):
+            with st.expander(
+                f"🔍 {entry['query']} em {entry['location']} - {entry['total']} resultado(s) - {entry['timestamp']}",
+                expanded=(idx == 0)  # Apenas a primeira expandida
+            ):
+                col_info, col_action = st.columns([3, 1])
+                
+                with col_info:
+                    st.markdown(f"**📊 Total:** {entry['total']} empresa(s)")
+                    st.markdown(f"**🎯 Busca:** {entry['query']}")
+                    st.markdown(f"**📍 Local:** {entry['location']}")
+                    st.markdown(f"**⏰ Data:** {entry['timestamp']}")
+                
+                with col_action:
+                    if st.button("👁️ Ver Resultados", key=f"view_{idx}", use_container_width=True):
+                        st.session_state.radar_results = entry['data']
+                        st.rerun()
+    
+    # Exibe os resultados
+    if st.session_state.radar_results:
+        results = st.session_state.radar_results
+        businesses = results.get('businesses', [])
+        
+        if not businesses:
+            st.warning("⚠️ Nenhuma empresa encontrada. Tente outros termos de busca.")
+        else:
+            st.markdown("---")
+            st.markdown(f"### 📊 Resultados ({len(businesses)} empresas)")
+            st.caption(f"Busca: **{results['query']}** em **{results['location']}**")
+            
+            # Exibe cada empresa como um card
+            for idx, business in enumerate(businesses):
+                with st.container(border=True):
+                    col_info, col_action = st.columns([4, 1])
+                    
+                    with col_info:
+                        # Nome e tipo
+                        st.markdown(f"### {business['position']}. {business['name']}")
+                        st.caption(f"📂 {business['type']}")
+                        
+                        # Avaliação
+                        if business.get('rating'):
+                            stars = "⭐" * int(business['rating'])
+                            st.markdown(f"{stars} **{business['rating']}/5** ({business.get('reviews', 0)} avaliações)")
+                        
+                        # Informações de contato
+                        info_cols = st.columns(3)
+                        
+                        with info_cols[0]:
+                            if business.get('phone'):
+                                st.markdown(f"📞 **{business['phone']}**")
+                            else:
+                                st.markdown("📞 _Telefone não disponível_")
+                        
+                        with info_cols[1]:
+                            if business.get('website'):
+                                st.markdown(f"🌐 [{business['website']}]({business['website']})")
+                            else:
+                                st.markdown("🌐 _Site não disponível_")
+                        
+                        with info_cols[2]:
+                            if business.get('address'):
+                                st.markdown(f"📍 {business['address'][:50]}...")
+                            else:
+                                st.markdown("📍 _Endereço não disponível_")
+                    
+                    with col_action:
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        
+                        # Valor padrão do projeto
+                        project_value = st.number_input(
+                            "Valor (R$)",
+                            min_value=0.0,
+                            value=5000.0,
+                            step=500.0,
+                            key=f"value_{idx}",
+                            label_visibility="collapsed"
+                        )
+                        
+                        # Botão de captura
+                        if st.button(
+                            "🎯 Capturar",
+                            key=f"capture_{idx}",
+                            type="primary",
+                            use_container_width=True
+                        ):
+                            # Converte para projeto
+                            with st.spinner(f"💾 Capturando '{business['name']}'..."):
+                                convert_data, convert_error = make_request(
+                                    'POST',
+                                    '/radar/convert',
+                                    json={
+                                        'business_name': business['name'],
+                                        'business_type': business['type'],
+                                        'phone': business.get('phone'),
+                                        'website': business.get('website'),
+                                        'address': business.get('address'),
+                                        'rating': business.get('rating'),
+                                        'reviews': business.get('reviews', 0),
+                                        'project_value': project_value
+                                    }
+                                )
+                            
+                            if convert_data and not convert_error:
+                                st.success(f"✅ {convert_data['message']}")
+                                st.balloons()
+                                st.info("💡 O lead foi enviado para o **Kanban** na fase de **Negociação**!")
+                            else:
+                                st.error(f"❌ {convert_error}")
+            
+            # Estatísticas
+            st.markdown("---")
+            col_title, col_export = st.columns([3, 1])
+            
+            with col_title:
+                st.markdown("### 📈 Estatísticas da Busca")
+            
+            with col_export:
+                st.markdown("<br>", unsafe_allow_html=True)
+                # Botão de exportar
+                if st.button("📥 Exportar para Excel", type="secondary", use_container_width=True):
+                    with st.spinner("📊 Gerando planilha..."):
+                        # Faz requisição para exportar
+                        data, error = make_request(
+                            'GET',
+                            '/radar/export',
+                            params={
+                                'query': results['query'],
+                                'location': results['location'],
+                                'limit': results['total']
+                            }
+                        )
+                    
+                    if data and not error:
+                        # data contém o arquivo em bytes
+                        import base64
+                        b64 = base64.b64encode(data).decode()
+                        filename = f"Radar_Vendas_{results['query'].replace(' ', '_')}_{results['location'].replace(' ', '_')}.xlsx"
+                        
+                        href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">📥 Clique para baixar</a>'
+                        st.markdown(href, unsafe_allow_html=True)
+                        st.success("✅ Planilha gerada! Clique no link acima para baixar")
+                    else:
+                        st.error(f"❌ {error}")
+            
+            col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
+            
+            with col_stat1:
+                st.metric("Total Encontrado", len(businesses))
+            
+            with col_stat2:
+                avg_rating = sum([b.get('rating', 0) for b in businesses if b.get('rating')]) / len([b for b in businesses if b.get('rating')]) if any([b.get('rating') for b in businesses]) else 0
+                st.metric("Avaliação Média", f"{avg_rating:.1f}⭐")
+            
+            with col_stat3:
+                with_phone = len([b for b in businesses if b.get('phone')])
+                st.metric("Com Telefone", f"{with_phone}/{len(businesses)}")
+            
+            with col_stat4:
+                with_website = len([b for b in businesses if b.get('website')])
+                st.metric("Com Website", f"{with_website}/{len(businesses)}")
 
 
 # ============================================
