@@ -28,12 +28,12 @@ from app.middleware.audit import AuditMiddleware
 # ============================================
 # CRIA AS TABELAS NO BANCO DE DADOS
 # ============================================
-print("🔄 Criando tabelas no banco de dados...")
+# print("[INFO] Criando tabelas no banco de dados...")
 try:
     models.Base.metadata.create_all(bind=engine)
-    print("✅ Tabelas criadas/verificadas com sucesso!")
+    # print("[OK] Tabelas criadas/verificadas com sucesso!")
 except Exception as e:
-    print(f"⚠️ Erro ao criar tabelas: {e}")
+    print(f"[ERROR] Erro ao criar tabelas: {e}")
     raise
 
 # ============================================

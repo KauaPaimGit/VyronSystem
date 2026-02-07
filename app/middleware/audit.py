@@ -94,7 +94,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
             except Exception as exc:
                 db.rollback()
                 # Log silencioso — middleware não deve derrubar a requisição
-                print(f"⚠️ Audit log falhou: {exc}")
+                # print(f"[WARN] Audit log falhou: {exc}")
             finally:
                 db.close()
         except Exception:

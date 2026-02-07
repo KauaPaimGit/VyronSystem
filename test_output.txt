@@ -1,0 +1,42 @@
+﻿1. Testando import do main...
+python.exe : Traceback (most recent call last):
+No linha:1 caractere:1
++ & "C:/Users/Kauã/Desktop/VyronSystem/.venv/Scripts/python.exe" test_r ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last) 
+   ::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\KauÒ\Desktop\VyronSystem\test_routers.py", line 7, in <module>
+    import main
+  File "C:\Users\KauÒ\Desktop\VyronSystem\main.py", line 21, in <module>
+    from app.modules.sales.router import router as sales_router
+  File "C:\Users\KauÒ\Desktop\VyronSystem\app\modules\sales\router.py", line 
+15, in <module>
+    from app.services import (
+    ...<4 lines>...
+    )
+  File "C:\Users\KauÒ\Desktop\VyronSystem\app\services.py", line 23, in 
+<module>
+    print(f"\u2705 FPDF2 carregado com sucesso!")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\KauÒ\AppData\Local\Programs\Python\Python314\Lib\encodings\cp1
+252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2705' in 
+position 0: character maps to <undefined>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\KauÒ\Desktop\VyronSystem\test_routers.py", line 34, in 
+<module>
+    print(f"\n\u274c ERRO ENCONTRADO:")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\KauÒ\AppData\Local\Programs\Python\Python314\Lib\encodings\cp1
+252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u274c' in 
+position 2: character maps to <undefined>

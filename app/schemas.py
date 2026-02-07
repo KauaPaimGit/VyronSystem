@@ -72,6 +72,7 @@ class ProjectType(str, Enum):
     """Enum para tipos de projeto"""
     recurring = "recurring"  # Recorrente
     one_off = "one_off"  # Pontual
+    prospection = "prospection"  # Prospecção
 
 
 class ProjectBase(BaseModel):
@@ -175,7 +176,7 @@ class RevenueBase(BaseModel):
     description: str
     amount: Decimal
     category: RevenueCategory
-    received_at: date
+    received_at: Optional[date] = None
 
 
 class RevenueCreate(RevenueBase):

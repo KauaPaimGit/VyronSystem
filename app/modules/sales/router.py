@@ -134,7 +134,7 @@ async def create_interaction(interaction: schemas.InteractionCreate, db: Session
         client_id=db_interaction.client_id,
         project_id=interaction.project_id,
         content=db_interaction.content,
-        interaction_type=db_interaction.type,
+        interaction_type=schemas.InteractionType(db_interaction.type),  # type: ignore
         created_at=db_interaction.created_at,
     )
 
@@ -159,7 +159,7 @@ def list_interactions(
             client_id=i.client_id,
             project_id=None,
             content=i.content,
-            interaction_type=i.type,
+            interaction_type=schemas.InteractionType(i.type),  # type: ignore
             created_at=i.created_at,
         )
         for i in interactions
@@ -178,7 +178,7 @@ def get_interaction(interaction_id: str, db: Session = Depends(get_db)):
         client_id=interaction.client_id,
         project_id=None,
         content=interaction.content,
-        interaction_type=interaction.type,
+        interaction_type=schemas.InteractionType(interaction.type),  # type: ignore
         created_at=interaction.created_at,
     )
 

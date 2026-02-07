@@ -20,12 +20,12 @@ from sqlalchemy import func
 try:
     from fpdf import FPDF
     FPDF_AVAILABLE = True
-    print(f"✅ FPDF2 carregado com sucesso!")
+    # print("[OK] FPDF2 carregado com sucesso!")
 except ImportError as e:
     FPDF_AVAILABLE = False
     import sys
-    print(f"⚠️ FPDF2 não instalado. Python: {sys.executable}")
-    print(f"⚠️ Erro: {e}")
+    print(f"[WARN] FPDF2 não instalado. Python: {sys.executable}")
+    print(f"[WARN] Erro: {e}")
 
 # Import dos models será feito dinamicamente para evitar circular import
 # Mas declaramos aqui para type hints

@@ -40,7 +40,7 @@ async def semantic_search(request: schemas.SearchRequest, db: Session = Depends(
             client_id=i.client_id,
             project_id=None,
             content=i.content,
-            interaction_type=i.type,
+            interaction_type=schemas.InteractionType(i.type),  # type: ignore
             created_at=i.created_at,
         )
         for i in similar
