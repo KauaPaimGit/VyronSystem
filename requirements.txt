@@ -16,3 +16,6 @@ pandas
 openpyxl
 passlib[bcrypt]
 google-search-results
+pypdf
+langchain-text-splitters
+python-multipart

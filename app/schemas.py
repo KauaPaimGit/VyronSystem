@@ -204,38 +204,7 @@ class RevenueResponse(RevenueBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ExpenseBase(BaseModel):
-    """Schema base para Despesa"""
-    description: str
-    amount: Decimal
-    category: ExpenseCategory
-    paid_at: date
-
-
-class ExpenseCreate(ExpenseBase):
-    """Schema para criação de Despesa"""
-    project_id: Optional[UUID] = None  # Opcional - pode ser custo fixo da agência
-
-
-class ExpenseUpdate(BaseModel):
-    """Schema para atualização parcial de Despesa"""
-    description: Optional[str] = None
-    amount: Optional[Decimal] = None
-    category: Optional[ExpenseCategory] = None
-    paid_at: Optional[date] = None
-    status: Optional[str] = None
-
-
-class ExpenseResponse(ExpenseBase):
-    """Schema de resposta com dados da Despesa"""
-    id: UUID
-    project_id: Optional[UUID]
-    status: str
-    is_fixed_cost: bool
-    is_project_related: bool
-    created_at: datetime
-    
-    model_config = ConfigDict(from_attributes=True)
+# (Expense schemas consolidados abaixo, seção "Adicional para entrada manual")
 
 
 # ============================================
@@ -274,6 +243,42 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     """Schema para resposta do chat com IA"""
     answer: str
+
+
+# ============================================
+# SCHEMAS: DOCUMENT RAG (Ingestão de Documentos)
+# ============================================
+
+class DocumentSearchRequest(BaseModel):
+    """Schema para busca semântica em documentos ingeridos"""
+    query: str
+    limit: int = 3
+    filename: Optional[str] = None  # Filtro opcional por arquivo
+
+
+class DocumentChunkResult(BaseModel):
+    """Um chunk retornado pela busca semântica"""
+    id: str
+    filename: str
+    chunk_index: int
+    content: str
+    score: float
+    metadata: Optional[dict] = None
+
+
+class DocumentSearchResponse(BaseModel):
+    """Resposta da busca semântica em documentos"""
+    query: str
+    results: List[DocumentChunkResult]
+    total: int
+
+
+class DocumentIngestResponse(BaseModel):
+    """Resposta da ingestão de um documento"""
+    filename: str
+    total_pages: int
+    total_chunks: int
+    status: str
 
 
 # ============================================
@@ -359,6 +364,8 @@ class ExpenseResponse(BaseModel):
     due_date: date
     paid_date: Optional[date]
     status: str
+    is_fixed_cost: bool = False
+    is_project_related: bool = False
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)

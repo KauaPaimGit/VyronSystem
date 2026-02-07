@@ -1,23 +1,16 @@
 <div align="center">
 
-# Vyron System
+# 🚀 Vyron System v1.1
 
-### Enterprise AI ERP — Gestão Inteligente de Agências
-
-`v1.0.0`
+### Enterprise AI ERP — Plataforma Modular de Gestão Inteligente
 
 [![Status](https://img.shields.io/badge/Status-Produção-brightgreen?style=for-the-badge)]()
+[![Version](https://img.shields.io/badge/Versão-1.1.0-blue?style=for-the-badge)]()
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)]()
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688?style=for-the-badge&logo=fastapi&logoColor=white)]()
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16_pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)]()
-[![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)]()
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)]()
-[![AI](https://img.shields.io/badge/AI-GPT--4o--mini-412991?style=for-the-badge&logo=openai&logoColor=white)]()
+[![FastAPI](https://img.shields.io/badge/FastAPI-Modular-009688?style=for-the-badge&logo=fastapi&logoColor=white)]()
 
----
-
-**Plataforma ERP com inteligência artificial embarcada, projetada para escalar operações de agências digitais.**
-**CRM, Financeiro, Marketing, Prospecção B2B e IA contextual (RAG) em um único sistema.**
+**Arquitetura baseada em Domínios (DDD) com Inteligência Artificial Multimodal, RAG nativo e 29 endpoints distribuídos em 4 pilares funcionais.**  
+**Sistema enterprise-grade para escalar operações de agências digitais com governança, rastreabilidade e inteligência contextual.**
 
 </div>
 
@@ -25,100 +18,59 @@
 
 ## Índice
 
-- [Descrição Executiva](#descrição-executiva)
-- [Funcionalidades Principais](#funcionalidades-principais)
+- [Arquitetura Modular v1.1](#arquitetura-modular-v11)
 - [Tech Stack](#tech-stack)
-- [Instalação](#instalação)
+- [Instalação e Configuração](#instalação-e-configuração)
 - [Estrutura de Diretórios](#estrutura-de-diretórios)
-- [Módulos do Sistema](#módulos-do-sistema)
-- [API REST](#api-rest)
+- [Funcionalidades Principais](#funcionalidades-principais)
+- [API REST — Endpoints por Módulo](#api-rest--endpoints-por-módulo)
 - [Banco de Dados](#banco-de-dados)
-- [Documentação](#documentação)
-- [Roadmap](#roadmap)
-- [Licença](#licença)
+- [Documentação Técnica](#documentação-técnica)
 
 ---
 
-## Descrição Executiva
+## 🏗️ Nova Arquitetura Modular (v1.1)
 
-O **Vyron System** é uma plataforma Enterprise AI ERP que consolida **10 módulos funcionais**, **50+ endpoints REST**, **18 tabelas** relacionais com suporte vetorial (pgvector) e **RAG nativo** para inteligência artificial contextual.
+O **Vyron System v1.1** foi reestruturado para garantir **escalabilidade enterprise e isolamento de responsabilidades** através de uma arquitetura modular baseada em **Domain-Driven Design (DDD)** e **APIRouter (FastAPI)**. A nova estrutura reduz o acoplamento, facilita manutenção e permite escalabilidade horizontal com middleware de auditoria centralizado.
 
-Projetado para agências digitais que precisam de:
+### Os 4 Pilares Funcionais
 
-- **Visão 360° do cliente** — CRM com Health Score, Sentiment Analysis e LTV automatizados.
-- **Controle financeiro granular** — Receitas, despesas, custos por projeto e margem de lucro em tempo real.
-- **Performance de marketing mensurável** — KPIs calculados automaticamente (CTR, CPC, CPL, ROI).
-- **Automação via IA** — Chat com Function Calling que executa ações no sistema por linguagem natural.
-- **Prospecção ativa** — Radar de Vendas integrado com Google Maps para captação B2B.
+| Módulo | Responsabilidade | Endpoints |
+|--------|------------------|-----------|
+| **🚀 Growth & Sales** | Módulo de prospecção ativa (Radar B2B), Caçador de Leads, CRM Inteligente e gestão de interações com clientes | 12 endpoints |
+| **🧠 Agency Brain** | Núcleo de IA unificado com RAG (Retrieval-Augmented Generation) para PDFs e imagens via `pgvector`, chat contextual e busca semântica | 6 endpoints |
+| **💰 Finance & Ops** | Dashboards de ROI, Fluxo de Caixa, Kanban Visual, gestão de projetos, receitas, despesas e KPIs de marketing | 9 endpoints |
+| **⚙️ System Core** | Autenticação JWT, Middleware de Auditoria (Logs de Rastreabilidade), diagnóstico de banco de dados e configurações | 2 endpoints + Middleware |
 
----
-
-## Funcionalidades Principais
-
-### Agency Brain — Inteligência Artificial com RAG
-
-O núcleo de IA do Vyron System. Utiliza **Retrieval-Augmented Generation** com embeddings armazenados via pgvector para fornecer respostas contextuais baseadas nos dados reais da operação.
-
-| Capacidade | Descrição |
-|---|---|
-| **Chat Contextual** | Busca semântica em interações, projetos e histórico de clientes |
-| **Multimodal** | Suporte a envio de imagens e PDFs para análise |
-| **Function Calling** | Criação de projetos, registro de despesas e consultas via linguagem natural |
-| **Knowledge Base** | Base de conhecimento interna com versionamento de documentos |
-| **Insights Automatizados** | Alertas de churn, saúde do cliente e rentabilidade |
-
-### Módulo Radar — Prospecção B2B
-
-Motor de prospecção ativa que conecta diretamente ao Google Maps para identificar oportunidades de negócio.
-
-| Capacidade | Descrição |
-|---|---|
-| **Busca Geolocalizada** | Pesquisa por nicho de mercado e localização |
-| **Extração de Dados** | Telefone, website, avaliação, endereço completo |
-| **Conversão 1-Click** | Transforma resultado em lead/projeto no CRM |
-| **Exportação Excel** | Dados estruturados para follow-up comercial |
-
-### Kanban Visual
-
-Gestão visual de projetos com quadro Kanban integrado à API.
-
-| Capacidade | Descrição |
-|---|---|
-| **Fases Configuráveis** | Planejamento → Produção → Entrega → Finalizado |
-| **Cartões Informativos** | Nome, cliente, valor contratado, status do projeto |
-| **Filtros e Busca** | Por nome de projeto, cliente ou status |
-| **Atualização via API** | Status sincronizado entre frontend e backend |
+**Total:** 29 endpoints REST distribuídos em 4 routers modulares (`app/modules/`), com **middleware de auditoria** interceptando todas as operações de escrita (POST/PUT/PATCH/DELETE) e registrando em `audit_logs`.
 
 ---
 
 ## Tech Stack
 
-| Camada | Tecnologia | Versão |
-|---|---|---|
-| **Linguagem** | Python | 3.11+ |
-| **API** | FastAPI | 0.109+ |
-| **ORM** | SQLAlchemy | 2.x |
-| **Validação** | Pydantic | v2 |
-| **Banco de Dados** | PostgreSQL + pgvector | 16+ |
-| **Frontend** | Streamlit | 1.30+ |
-| **Visualização** | Plotly | — |
-| **IA — Chat** | OpenAI GPT-4o-mini | — |
-| **IA — Embeddings** | text-embedding-3-small | 1536 dims |
-| **PDF** | FPDF2 | — |
-| **Containerização** | Docker + Docker Compose | — |
+| Camada | Tecnologia | Versão | Função |
+|--------|------------|--------|--------|
+| **Backend** | FastAPI | 0.109+ | API modular com APIRouter |
+| **ORM** | SQLAlchemy | 2.x (sync) | Mapeamento objeto-relacional |
+| **Database** | PostgreSQL 16 | + pgvector 0.5+ | Banco relacional + busca vetorial |
+| **AI/ML** | OpenAI API | GPT-4o-mini + text-embedding-3-small | Chat + embeddings (1536 dims) |
+| **Frontend** | Streamlit | 1.30+ | Interface web responsiva |
+| **Containerização** | Docker | + Docker Compose | Orquestração de infraestrutura |
+| **Python** | 3.11+ | CPython | Runtime principal |
 
 ---
 
-## Instalação
+## Instalação e Configuração
 
 ### Pré-requisitos
 
 - Python 3.11+
-- Docker (para o banco de dados)
-- Chave de API OpenAI
+- PostgreSQL 16+ com extensão pgvector
+- Docker e Docker Compose (recomendado)
+- OpenAI API Key
 - Git
 
-### Passo 1 — Clonar o repositório
+### Passo 1 — Clone o repositório
 
 ```bash
 git clone https://github.com/KauaPaimGit/VyronSystem.git
@@ -129,67 +81,81 @@ cd VyronSystem
 
 Crie um arquivo `.env` na raiz do projeto:
 
-```bash
+```env
+# Database
 DATABASE_URL=postgresql://admin:password123@localhost:5432/agency_os
-OPENAI_API_KEY=sk-your-key-here
-SECRET_KEY=sua_chave_secreta_aqui
+
+# OpenAI
+OPENAI_API_KEY=sk-proj-...
+
+# SerpAPI (Radar de Vendas)
+SERPAPI_KEY=your_serpapi_key_here
 ```
 
-### Passo 3 — Iniciar o banco de dados
+### Passo 3 — Iniciar PostgreSQL com pgvector (Docker)
 
 ```bash
-docker run -d \
-  --name vyron-db \
-  -e POSTGRES_USER=admin \
-  -e POSTGRES_PASSWORD=password123 \
-  -e POSTGRES_DB=agency_os \
-  -p 5432:5432 \
-  ankane/pgvector:latest
+docker compose up -d db
 ```
 
-### Passo 4 — Executar o schema do banco
+> Aguarde ~10 segundos para o PostgreSQL inicializar completamente.
+
+**Habilitar pgvector:**
 
 ```bash
-psql -h localhost -U admin -d agency_os -f docs/database_schema.sql
+docker exec agency_os_db psql -U admin -d agency_os -c "CREATE EXTENSION IF NOT EXISTS vector;"
 ```
 
-> **Nota:** O schema completo com as 18 tabelas, views, triggers e índices vetoriais está em `docs/database_schema.sql`.
+### Passo 4 — Executar migrations (Automação de Banco de Dados)
 
-### Passo 5 — Instalar dependências
+```bash
+python scripts/run_migrations.py
+```
+
+> **⚡ Crítico:** Este comando automatiza a criação do banco de dados, habilitando as extensões `vector` e `uuid-ossp`, criando as **16 tabelas** (incluindo `audit_logs` e `document_chunks`) e os **índices vetoriais IVFFlat** necessários para o RAG. Essencial para garantir compatibilidade com ambientes sem console interativo (ex: Render.com).
+
+### Passo 5 — Criar usuário admin
+
+```bash
+python scripts/_create_admin_quick.py
+```
+
+> Cria o usuário `admin` com senha `senha123`.
+
+### Passo 6 — Instalar dependências Python
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Passo 6 — Iniciar o backend
+### Passo 7 — Iniciar o backend
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-### Passo 7 — Iniciar o frontend (novo terminal)
+### Passo 8 — Iniciar o frontend (novo terminal)
 
 ```bash
-cd frontend
-streamlit run app.py
+streamlit run frontend/app.py --server.port 8501
+```
+
+### Passo 9 — Ingestão de Conhecimento (Opcional)
+
+Para alimentar o **Vyron Agency Brain** com documentos locais:
+
+```bash
+python scripts/ingest_document.py "caminho/do/seu/documento.pdf"
 ```
 
 ### Acessos
 
 | Interface | URL |
-|---|---|
-| API Backend | `http://localhost:8000` |
-| Swagger UI (Docs) | `http://localhost:8000/docs` |
-| ReDoc | `http://localhost:8000/redoc` |
-| Frontend Streamlit | `http://localhost:8501` |
-
-### Alternativa — Docker Compose (stack completa)
-
-```bash
-docker-compose up --build
-```
-
-> Sobe o PostgreSQL + pgvector e a API automaticamente.
+|-----------|-----|
+| **Frontend Streamlit** | `http://localhost:8501` |
+| **API Backend** | `http://localhost:8000` |
+| **Swagger Docs** | `http://localhost:8000/docs` |
+| **ReDoc** | `http://localhost:8000/redoc` |
 
 ---
 
@@ -197,225 +163,288 @@ docker-compose up --build
 
 ```
 VyronSystem/
-├── main.py                  # Entrypoint FastAPI — 50+ endpoints
-├── requirements.txt         # Dependências Python
-├── Dockerfile               # Build da API
-├── docker-compose.yml       # Orquestração (DB + API)
-├── .env                     # Variáveis de ambiente (não versionado)
+├── main.py                      # Entrypoint FastAPI modular (~75 linhas)
+├── requirements.txt             # Dependências Python
+├── Dockerfile                   # Build da API
+├── docker-compose.yml           # PostgreSQL + pgvector + API
+├── .env                         # Variáveis de ambiente (não versionado)
 │
-├── app/                     # Lógica do Backend
-│   ├── __init__.py
-│   ├── auth.py              # Autenticação JWT + bcrypt
-│   ├── database.py          # Conexão SQLAlchemy + Engine
-│   ├── models.py            # Modelos ORM (18 tabelas)
-│   ├── schemas.py           # Schemas Pydantic v2
-│   ├── services.py          # Serviços de IA, PDF, embeddings
+├── app/
+│   ├── models.py                # 16 modelos ORM (incluindo AuditLog, DocumentChunk)
+│   ├── schemas.py               # Schemas Pydantic v2
+│   ├── database.py              # Engine SQLAlchemy (sync)
+│   ├── auth.py                  # bcrypt + autenticação
+│   ├── services.py              # Serviços legados (em processo de modularização)
+│   ├── brain_service.py         # RAG Engine (PDF → chunks → embeddings → pgvector)
+│   │
+│   ├── modules/                 # ⚡ Nova Arquitetura Modular v1.1
+│   │   ├── auth/
+│   │   │   └── router.py        # POST /login, GET /db-test
+│   │   ├── sales/
+│   │   │   └── router.py        # CRM, interações, Radar de Vendas
+│   │   ├── brain/
+│   │   │   └── router.py        # RAG multimodal (PDF + imagens)
+│   │   └── finance/
+│   │       └── router.py        # Projetos, receitas, despesas, KPIs
+│   │
+│   ├── middleware/
+│   │   └── audit.py             # AuditMiddleware (intercepta POST/PUT/PATCH/DELETE)
+│   │
 │   └── services/
-│       └── radar.py         # Módulo Radar (Google Maps API)
+│       └── radar.py             # Google Maps B2B Scraper
 │
-├── frontend/                # Interface Streamlit
-│   ├── app.py               # Aplicação frontend completa
-│   ├── requirements.txt     # Dependências do frontend
-│   └── README.md
+├── frontend/
+│   ├── app.py                   # Interface Streamlit v2.0 (1255 linhas)
+│   └── app_backup.py            # Backup da versão anterior
 │
-├── docs/                    # Documentação e Schema SQL
-│   ├── database_schema.sql  # Schema completo do banco (18 tabelas + views)
-│   ├── architecture_docs.md # Arquitetura técnica detalhada
-│   ├── INSTALL.md           # Guia de instalação estendido
-│   ├── AUTH_README.md       # Documentação de autenticação
-│   ├── RADAR_README.md      # Documentação do Módulo Radar
-│   ├── CHANGELOG_v1.1.md    # Histórico de versões
-│   ├── FEATURE_ROI_v1.2.md  # Especificação ROI Intelligence
-│   └── FIXES_v1.1.md        # Registro de correções
+├── docs/
+│   ├── database_schema.sql      # Schema SQL completo
+│   ├── architecture_docs.md     # Arquitetura detalhada
+│   ├── AUTH_README.md
+│   ├── RADAR_README.md
+│   └── CHANGELOG_v1.1.md
 │
-├── scripts/                 # Utilitários de administração
-│   ├── create_admin.py      # Criar usuário admin local
-│   ├── create_remote_admin.py
-│   ├── fix_users_table.py
-│   ├── force_admin_creation.py
-│   ├── remove_duplicates.py
-│   ├── add_kanban_status.py
-│   └── main_endpoint_addition.py
+├── scripts/
+│   ├── run_migrations.py        # Executor de migrations via Python
+│   ├── ingest_document.py       # CLI para ingestão de PDFs no RAG
+│   ├── _create_admin_quick.py   # Criação rápida de admin (não-interativo)
+│   └── create_admin.py          # Criação interativa de admin
 │
-├── migrations/              # Migrations SQL incrementais
-│   ├── 001_add_marketing_metrics.sql
-│   ├── 002_add_product_price_to_projects.sql
-│   └── 003_add_users_table.sql
-│
-└── diagrams/
-    └── er_diagram.md        # Diagrama Entidade-Relacionamento
+└── migrations/
+    ├── 001_add_marketing_metrics.sql
+    ├── 002_add_product_price_to_projects.sql
+    ├── 003_add_users_table.sql
+    ├── 004_add_document_chunks.sql       # Tabela RAG + índice IVFFlat
+    └── 005_add_audit_logs.sql            # Sistema de auditoria
 ```
 
 ---
 
-## Módulos do Sistema
+## Funcionalidades Principais
 
-| # | Módulo | Descrição |
-|---|---|---|
-| 1 | **Autenticação** | JWT + bcrypt, roles (admin/user), controle de sessão |
-| 2 | **CRM Inteligente** | CRUD de clientes, Health Score, LTV, funil de vendas |
-| 3 | **Gestão de Projetos** | Tipos recorrente/pontual, templates de tarefas, Kanban |
-| 4 | **Financeiro (ERP)** | Receitas, despesas, custos por projeto, margem de lucro |
-| 5 | **Marketing** | Métricas de campanha, KPIs automáticos (CTR, CPC, ROI) |
-| 6 | **Entrada Manual** | Formulários com memória RAG integrada |
-| 7 | **Contratos** | Templates dinâmicos com variáveis, geração PDF |
-| 8 | **Agency Brain (IA)** | RAG + Function Calling + análise multimodal |
-| 9 | **Radar de Vendas** | Prospecção B2B via Google Maps, export Excel |
-| 10 | **Kanban Visual** | Quadro de gestão visual com filtros e busca |
+### 🧠 Vyron Agency Brain — RAG System
+
+O **Vyron Agency Brain** é o motor de inteligência do sistema — um pipeline de **Retrieval-Augmented Generation (RAG)** que processa documentos de forma contextual e escalável, combinando busca vetorial (pgvector) com modelos de linguagem (GPT-4o-mini) para fornecer respostas fundamentadas em conhecimento real.
+
+#### Capacidades
+
+| Recurso | Tecnologia | Descrição |
+|---------|------------|-----------|
+| **Ingestão de PDFs** | pypdf + langchain-text-splitters | Extração de texto, chunking semântico (500 tokens), geração de embeddings (1536 dims) |
+| **Busca Semântica** | pgvector + IVFFlat | Consulta por similaridade de cosseno em espaço vetorial de alta dimensão |
+| **Análise de Imagens** | GPT-4o Vision | Extração de informações de recibos, notas fiscais, documentos escaneados |
+| **Chat Contextual** | OpenAI Chat API | Respostas fundamentadas em documentos reais + histórico de interações |
+| **Knowledge Base** | PostgreSQL + Vector Index | Base de conhecimento persistente com versionamento de documentos |
+
+#### Pipeline de Ingestão e Recuperação
+
+```
+📄 PDF Upload → Extração de Texto (pypdf) → Chunking Semântico (500 tokens) 
+    → 🔢 Embeddings (text-embedding-3-small, 1536 dims) 
+    → 💾 Armazenamento (document_chunks + pgvector)
+    → 🔍 Busca por Similaridade (distância de cosseno via IVFFlat)
+    → 🤖 Contexto para LLM → ✅ Resposta Fundamentada em Documentos Reais
+```
+
+#### Endpoints
+
+- `POST /brain/upload` — Upload e ingestão automática de PDF
+- `POST /brain/search` — Busca semântica em documentos indexados
+- `POST /ai/chat` — Chat contextual com function calling
+- `GET /brain/status` — Métricas da base de conhecimento (total de chunks, documentos, etc.)
 
 ---
 
-## API REST
+### �️ Sistema de Auditoria Automática
 
-### Endpoints Principais (50+)
+O **AuditMiddleware** garante **conformidade e rastreabilidade total** de operações no sistema. Ele intercepta todas as requisições de escrita (POST, PUT, PATCH, DELETE) e registra automaticamente na tabela `audit_logs` os seguintes dados:
 
-```
-# Autenticação
-POST   /login                              Autenticar usuário
+- **Timestamp** da operação
+- **Método HTTP** e **path** acessado
+- **Status code** da resposta
+- **Duração** da requisição (em ms)
+- **IP do cliente**
+- **User-Agent** (opcional)
 
-# CRM
-POST   /clients                            Criar cliente
-GET    /clients                            Listar clientes
-GET    /clients/{id}                       Detalhes do cliente
-PATCH  /clients/{id}                       Atualizar cliente
-DELETE /clients/{id}                       Remover cliente
+#### Cobertura
 
-# Projetos
-POST   /projects                           Criar projeto
-GET    /projects                           Listar projetos
-GET    /projects/{id}                      Detalhes do projeto
-PATCH  /projects/{id}                      Atualizar projeto
-PATCH  /projects/{id}/status               Atualizar status (Kanban)
-GET    /projects/{id}/financial-dashboard   Dashboard financeiro
-GET    /projects/{id}/marketing-kpis       KPIs de marketing
+**16 tabelas auditadas:**
+- `users`, `clients`, `projects`, `interactions`, `revenues`, `expenses`
+- `marketing_metrics`, `document_chunks`, `kanban_cards`, e demais
 
-# Entrada Manual
-POST   /manual/projects                    Criar projeto (formulário)
-POST   /manual/expenses                    Registrar despesa
-POST   /manual/marketing-metrics           Adicionar métricas
+#### Casos de Uso
 
-# Inteligência Artificial
-POST   /ai/search                          Busca semântica (RAG)
-POST   /ai/chat                            Chat com IA (multimodal)
+- Compliance e rastreabilidade de alterações
+- Debugging de operações críticas
+- Análise de performance de endpoints
+- Auditoria de segurança e acesso
 
-# Radar de Vendas
-POST   /radar/search                       Buscar empresas (Google Maps)
-POST   /radar/convert                      Converter em lead/projeto
-POST   /radar/export                       Exportar para Excel
+---
 
-# Interações
-POST   /interactions                       Criar interação
-GET    /clients/{id}/interactions           Listar interações
-DELETE /interactions/{id}                   Remover interação
-```
+### 📡 Radar de Vendas — Prospecção B2B Automatizada
 
-### Exemplos de Uso
+Motor de inteligência comercial que utiliza a Google Maps API (via SerpAPI) para identificar e qualificar leads automaticamente.
 
-```bash
-# Autenticar
-curl -X POST http://localhost:8000/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "admin@agency.com", "password": "senha"}'
+#### Funcionalidades
 
-# Criar projeto via entrada manual
-curl -X POST http://localhost:8000/manual/projects \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Campanha Digital Q1",
-    "client_name": "Empresa XYZ",
-    "budget": 15000,
-    "product_price": 500
-  }'
+- **Busca geolocalizada** por nicho (ex: "Pizzaria em São Paulo")
+- **Extração estruturada** de dados de contato (telefone, website, email)
+- **Conversão 1-click** para o CRM (cria cliente + projeto automaticamente)
+- **Export Excel** com avaliações, endereço e dados de contato
 
-# Chat com IA (Agency Brain)
-curl -X POST http://localhost:8000/ai/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Qual projeto tem melhor ROI este mês?"}'
-```
+#### Endpoints
+
+- `GET /radar/search` — Busca empresas no Google Maps
+- `POST /radar/convert` — Converte resultado em lead/projeto
+- `GET /radar/export` — Gera planilha Excel para follow-up
+
+---
+
+### 💰 Dashboard Financeiro & KPIs de Marketing
+
+Painel centralizado com cálculos automatizados de performance financeira e métricas de marketing digital.
+
+#### Métricas Calculadas
+
+| Métrica | Fórmula | Descrição |
+|---------|---------|-----------|
+| **CTR** | (Cliques ÷ Impressões) × 100 | Taxa de cliques |
+| **CPC** | Custo Total ÷ Cliques | Custo por clique |
+| **CPL** | Custo Total ÷ Leads | Custo por lead |
+| **Conversion Rate** | (Conversões ÷ Leads) × 100 | Taxa de conversão |
+| **ROI** | ((Receita − Custo) ÷ Custo) × 100 | Retorno sobre investimento |
+| **Margem de Lucro** | (Receita − Despesas) ÷ Receita × 100 | Lucratividade líquida |
+
+#### Recursos
+
+- **Gráficos interativos** (Plotly)
+- **Export PDF** dos relatórios financeiros
+- **Comparação período a período**
+- **Alertas de margem negativa**
+
+---
+
+## API REST — Endpoints por Módulo
+
+### 🚀 Growth & Sales (`app/modules/sales/router.py`)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `POST` | `/clients` | Criar cliente |
+| `GET` | `/clients` | Listar clientes (com filtros) |
+| `GET` | `/clients/{id}` | Detalhes do cliente |
+| `PUT` | `/clients/{id}` | Atualizar cliente |
+| `DELETE` | `/clients/{id}` | Remover cliente |
+| `POST` | `/interactions/` | Registrar interação |
+| `GET` | `/interactions/` | Listar interações |
+| `GET` | `/clients/{id}/interactions` | Interações de um cliente |
+| `GET` | `/radar/search` | Buscar empresas no Google Maps |
+| `POST` | `/radar/convert` | Converter resultado em lead |
+| `GET` | `/radar/export` | Exportar planilha Excel |
+
+### 🧠 Agency Brain (`app/modules/brain/router.py`)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `POST` | `/brain/upload` | Upload de PDF + ingestão automática |
+| `POST` | `/brain/search` | Busca semântica em documentos |
+| `POST` | `/brain/ingest` | Ingestão manual de arquivo |
+| `GET` | `/brain/status` | Estatísticas da base RAG |
+| `POST` | `/ai/chat` | Chat contextual com GPT-4o |
+| `POST` | `/ai/search` | Busca híbrida (vetorial + keyword) |
+
+### 💰 Finance & Ops (`app/modules/finance/router.py`)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `POST` | `/projects/` | Criar projeto |
+| `GET` | `/projects/` | Listar projetos |
+| `GET` | `/projects/{id}` | Detalhes do projeto |
+| `PATCH` | `/projects/{id}/status` | Atualizar status (Kanban) |
+| `POST` | `/revenues/` | Registrar receita |
+| `GET` | `/revenues/` | Listar receitas |
+| `POST` | `/expenses/` | Registrar despesa |
+| `GET` | `/expenses/` | Listar despesas |
+| `GET` | `/projects/{id}/financial-dashboard` | Dashboard financeiro do projeto |
+| `GET` | `/projects/{id}/marketing-kpis` | KPIs de marketing do projeto |
+| `GET` | `/projects/{id}/export/pdf` | Exportar relatório PDF |
+| `POST` | `/manual/projects` | Lançamento manual de projeto |
+| `POST` | `/manual/expenses` | Lançamento manual de despesa |
+| `POST` | `/manual/marketing-metrics` | Lançamento manual de métricas |
+
+### ⚙️ System Core (`app/modules/auth/router.py`)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `POST` | `/login` | Autenticação (retorna token) |
+| `GET` | `/db-test` | Diagnóstico de banco + pgvector |
 
 ---
 
 ## Banco de Dados
 
-**PostgreSQL 16+ com pgvector** — 18 tabelas, 3 views materializadas, triggers de auditoria.
+### Schema — 16 Tabelas
 
-### Extensões
+```sql
+-- Core
+users, clients, projects, interactions
 
-| Extensão | Finalidade |
-|---|---|
-| `pgvector` | Busca vetorial para embeddings (1536 dims) |
-| `uuid-ossp` | Geração de UUIDs |
+-- Financeiro
+revenues, expenses, marketing_metrics
 
-### Tabelas Principais
+-- IA & Conhecimento
+document_chunks (com vector(1536))
 
-| Tabela | Módulo |
-|---|---|
-| `users` | Autenticação |
-| `clients` | CRM |
-| `sales_pipeline` | CRM — Funil |
-| `interactions` | CRM — Histórico (vetorial) |
-| `projects` | Projetos |
-| `project_tasks` | Projetos |
-| `task_templates` | Projetos |
-| `revenues` | Financeiro |
-| `expenses` | Financeiro |
-| `project_costs` | Financeiro |
-| `marketing_metrics` | Marketing |
-| `contract_templates` | Contratos |
-| `contracts` | Contratos |
-| `ai_insights` | IA |
-| `knowledge_base` | IA — RAG |
+-- Auditoria
+audit_logs
 
-### Views SQL
+-- Kanban
+kanban_cards
 
-| View | Descrição |
-|---|---|
-| `project_profitability` | Rentabilidade por projeto com margem calculada |
-| `client_lifetime_value` | LTV agregado por cliente |
-| `marketing_kpis` | CTR, CPC, CPL, ROI automatizados |
+-- Outros
+project_costs, roi_insights, ai_memory, radar_search_history, sentiment_scores, pricing_tiers
+```
 
-> Schema completo: [`docs/database_schema.sql`](docs/database_schema.sql)
+### Índices Vetoriais
+
+```sql
+CREATE INDEX document_chunks_embedding_idx
+ON document_chunks
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+```
+
+> **IVFFlat:** Approximate Nearest Neighbor (ANN) search com 100 clusters para busca sub-linear em datasets grandes.
 
 ---
 
-## Documentação
+## Documentação Técnica
 
-| Documento | Descrição |
-|---|---|
-| [`docs/architecture_docs.md`](docs/architecture_docs.md) | Arquitetura técnica completa |
-| [`docs/database_schema.sql`](docs/database_schema.sql) | Schema do banco (18 tabelas + views + triggers) |
-| [`docs/INSTALL.md`](docs/INSTALL.md) | Guia detalhado de instalação |
-| [`docs/AUTH_README.md`](docs/AUTH_README.md) | Sistema de autenticação |
-| [`docs/RADAR_README.md`](docs/RADAR_README.md) | Módulo Radar de Vendas |
-| [`docs/CHANGELOG_v1.1.md`](docs/CHANGELOG_v1.1.md) | Histórico de versões |
-| [`docs/FEATURE_ROI_v1.2.md`](docs/FEATURE_ROI_v1.2.md) | Especificação ROI Intelligence |
-| [`diagrams/er_diagram.md`](diagrams/er_diagram.md) | Diagrama Entidade-Relacionamento |
+- **[Arquitetura Modular](docs/architecture_docs.md)** — Fluxo de dados, decisões de design, diagramas
+- **[Autenticação](docs/AUTH_README.md)** — JWT, bcrypt, gerenciamento de sessões
+- **[Radar de Vendas](docs/RADAR_README.md)** — Integração Google Maps, fluxo de conversão
+- **[Changelog v1.1](docs/CHANGELOG_v1.1.md)** — Histórico de mudanças da v1.1
+- **[Schema SQL](docs/database_schema.sql)** — DDL completo de todas as tabelas
 
 ---
 
 ## Roadmap
 
-| Prioridade | Feature | Status |
-|---|---|---|
-| P0 | Ingestão de Documentos Longos (PDF chunking + embeddings incrementais) | Planejado |
-| P1 | Multi-tenancy — Isolamento de dados por agência | Planejado |
-| P1 | Dashboard de ROI consolidado cross-project | Planejado |
-| P2 | Webhooks para integração com ferramentas externas | Planejado |
-| P2 | Notificações em tempo real (WebSocket) | Planejado |
-| P3 | App mobile (React Native) | Backlog |
+- [ ] **Módulo de Relatórios Agendados** — Export automático de dashboards via cron
+- [ ] **Webhooks para eventos de CRM** — Integração com Zapier/Make
+- [ ] **Multi-tenant** — Suporte a múltiplas agências em uma instância
+- [ ] **Autenticação OAuth2** — Login com Google/Microsoft
+- [ ] **Análise Preditiva** — Churn prediction com scikit-learn
+- [ ] **Dashboard Mobile** — PWA + React Native
 
 ---
 
 <div align="center">
 
-## Licença
-
-**Proprietário — Todos os direitos reservados.**
-
 ---
 
-Vyron System v1.0.0 — Enterprise AI ERP
+**Desenvolvido por [Kauã Pereira Paim](https://github.com/KauaPaimGit) — 2026**
 
-Desenvolvido para escalar operações de agências digitais.
+**Proprietário — Todos os direitos reservados.**
 
 </div>

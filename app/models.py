@@ -485,3 +485,65 @@ class MarketingMetric(Base):
         Index('idx_marketing_metrics_project', 'project_id'),
         Index('idx_marketing_metrics_date', 'date'),
     )
+
+
+# ============================================
+# MÓDULO: DOCUMENT RAG (Ingestão de Documentos)
+# ============================================
+
+class DocumentChunk(Base):
+    """
+    Chunks de documentos processados para RAG.
+    
+    Cada documento (PDF, TXT, etc.) é dividido em chunks menores,
+    cada um com seu próprio embedding vetorial para busca semântica.
+    """
+    __tablename__ = "document_chunks"
+
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    filename: Mapped[str] = mapped_column(String(500), nullable=False, index=True)
+    chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    embedding: Mapped[list] = mapped_column(Vector(1536), nullable=True)
+    metadata_json: Mapped[Optional[dict]] = mapped_column(
+        JSONB,
+        nullable=True,
+        comment="Metadados extras: page_number, total_pages, chunk_size, source_type, etc."
+    )
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index('idx_document_chunks_filename', 'filename'),
+        Index(
+            'idx_document_chunks_embedding',
+            'embedding',
+            postgresql_using='ivfflat',
+            postgresql_ops={'embedding': 'vector_cosine_ops'},
+        ),
+    )
+
+
+# ============================================
+# MÓDULO: AUDIT LOG (Middleware de Auditoria)
+# ============================================
+
+class AuditLog(Base):
+    """Registra toda ação de alteração de dados no sistema."""
+    __tablename__ = "audit_logs"
+
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    method: Mapped[str] = mapped_column(String(10), nullable=False)           # POST, PATCH, PUT, DELETE
+    path: Mapped[str] = mapped_column(String(500), nullable=False)            # /clients, /projects/...
+    status_code: Mapped[int] = mapped_column(Integer, nullable=False)         # 200, 201, 400…
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500))
+    client_ip: Mapped[Optional[str]] = mapped_column(String(50))
+    request_body: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    response_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    __table_args__ = (
+        Index('idx_audit_logs_timestamp', 'timestamp'),
+        Index('idx_audit_logs_path', 'path'),
+    )
