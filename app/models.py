@@ -542,10 +542,58 @@ class LeadDiscovery(Base):
 
     discovered_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
+    # Relationship
+    competitor_intels: Mapped[List["CompetitorIntel"]] = relationship(
+        "CompetitorIntel", back_populates="lead", cascade="all, delete-orphan"
+    )
+
     __table_args__ = (
         Index('idx_lead_disc_name', 'name'),
         Index('idx_lead_disc_query', 'source_query'),
         Index('idx_lead_disc_discovered', 'discovered_at'),
+    )
+
+
+# ============================================
+# MÓDULO: SPY — Inteligência Competitiva (v1.2)
+# ============================================
+
+class CompetitorIntel(Base):
+    """Dados de inteligência competitiva associados a um lead descoberto."""
+    __tablename__ = "competitor_intel"
+
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    lead_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("lead_discoveries.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    competitor_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    website_url: Mapped[Optional[str]] = mapped_column(String(500))
+    ads_platform: Mapped[Optional[str]] = mapped_column(
+        String(100), comment="Google Ads, Meta Ads, LinkedIn Ads, etc."
+    )
+    estimated_traffic_tier: Mapped[Optional[str]] = mapped_column(
+        String(50), comment="low, medium, high, very_high"
+    )
+    tech_stack: Mapped[Optional[str]] = mapped_column(
+        String(500), comment="Ex.: WordPress, Shopify, React, Next.js"
+    )
+    market_sentiment: Mapped[Optional[float]] = mapped_column(
+        Numeric(4, 2), comment="Sentimento de mercado (-1.00 a 1.00) para Market Predictor"
+    )
+    analysis_summary: Mapped[Optional[str]] = mapped_column(Text)
+
+    last_spy_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    # Relationship
+    lead: Mapped["LeadDiscovery"] = relationship("LeadDiscovery", back_populates="competitor_intels")
+
+    __table_args__ = (
+        Index('idx_comp_intel_lead', 'lead_id'),
+        Index('idx_comp_intel_name', 'competitor_name'),
+        Index('idx_comp_intel_last_spy', 'last_spy_at'),
     )
 
 
@@ -559,7 +607,7 @@ class AuditLog(Base):
 
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-    method: Mapped[str] = mapped_column(String(10), nullable=False)           # POST, PATCH, PUT, DELETE
+    method: Mapped[str] = mapped_column(String(50), nullable=False)           # POST, PATCH, PUT, DELETE, BATCH, SPY...
     path: Mapped[str] = mapped_column(String(500), nullable=False)            # /clients, /projects/...
     status_code: Mapped[int] = mapped_column(Integer, nullable=False)         # 200, 201, 400…
     user_agent: Mapped[Optional[str]] = mapped_column(String(500))

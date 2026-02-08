@@ -4,14 +4,14 @@ Sales Router — CRM (Clientes), Interações e Radar de Vendas (Prospecção)
 import logging
 import threading
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, date
 from decimal import Decimal
 from pydantic import BaseModel
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from app.database import get_db, SessionLocal
 from app import models, schemas
@@ -22,10 +22,43 @@ from app.services import (
     get_client_interactions,
 )
 from app.modules.sales.repository import save_discovery_batch
+from app.modules.sales.spy_service import SpyService
 
 log = logging.getLogger("vyron.sales.router")
 
 router = APIRouter(tags=["Sales"])
+
+# ── Feature-flag: controle de acesso por role (SaaS prep) ────
+_SPY_ALLOWED_ROLES = {"admin", "power_user"}
+
+
+def _get_current_user(authorization: str = Header(...), db: Session = Depends(get_db)) -> models.User:
+    """
+    Dependency leve que extrai o usuário a partir do header Authorization.
+    Formato esperado: 'Bearer fake-jwt-token-<user_uuid>'
+    """
+    try:
+        token = authorization.replace("Bearer ", "").strip()
+        # Token é fake-jwt-token-<uuid>
+        user_id_str = token.replace("fake-jwt-token-", "")
+        user_id = UUID(user_id_str)
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=401, detail="Token inválido ou ausente.")
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="Usuário não encontrado ou inativo.")
+    return user
+
+
+def _require_spy_access(user: models.User = Depends(_get_current_user)) -> models.User:
+    """Garante que apenas ADMIN ou POWER_USER disparem a espionagem."""
+    if user.role.lower() not in _SPY_ALLOWED_ROLES:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Acesso negado. Spy Module requer perfil ADMIN ou POWER_USER (atual: {user.role}).",
+        )
+    return user
 
 
 # ══════════════════════════════════════════════
@@ -410,3 +443,76 @@ def convert_business_to_project(request: RadarConvertRequest, db: Session = Depe
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro ao criar projeto: {str(e)}")
+
+
+# ══════════════════════════════════════════════
+# SPY MODULE — Inteligência Competitiva (v1.2)
+# ══════════════════════════════════════════════
+
+@router.post(
+    "/radar/leads/{lead_id}/spy",
+    response_model=schemas.SpyAnalysisResponse,
+    summary="Dispara análise de inteligência competitiva para um lead",
+)
+async def spy_lead(
+    lead_id: UUID,
+    payload: schemas.SpyRequest = schemas.SpyRequest(),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(_require_spy_access),
+):
+    """
+    🕵️ **Spy Module** — Analisa presença digital do concorrente.
+
+    - Coleta simulada de SEO, Ads e Tech Stack.
+    - Salva `CompetitorIntel` no banco.
+    - Indexa insights no RAG para o Agency Brain.
+    - Registra ação no `audit_logs` como `COMPETITOR_ANALYSIS_DISPATCHED`.
+
+    **Feature Flag**: Apenas usuários com role `admin` ou `power_user`.
+    """
+    # 1. Busca o lead
+    lead = db.query(models.LeadDiscovery).filter(models.LeadDiscovery.id == lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail=f"Lead {lead_id} não encontrado.")
+
+    # 2. Executa análise
+    try:
+        intel = await SpyService.analyze_competitor_presence(
+            db=db,
+            lead=lead,
+            website_url=payload.website_url,
+            force_refresh=payload.force_refresh,
+        )
+    except Exception as exc:
+        log.error("Erro no SpyService para lead %s: %s", lead_id, exc)
+        raise HTTPException(status_code=500, detail=f"Erro na análise: {str(exc)}")
+
+    # 3. Audit log — COMPETITOR_ANALYSIS_DISPATCHED
+    audit = models.AuditLog(
+        id=uuid4(),
+        timestamp=datetime.utcnow(),
+        method="SPY",
+        path=f"/radar/leads/{lead_id}/spy",
+        status_code=200,
+        user_agent=f"user:{current_user.username}",
+        client_ip=None,
+        request_body={
+            "lead_id": str(lead_id),
+            "lead_name": lead.name,
+            "force_refresh": payload.force_refresh,
+            "triggered_by": current_user.username,
+            "action": "COMPETITOR_ANALYSIS_DISPATCHED",
+        },
+        response_summary=f"COMPETITOR_ANALYSIS_DISPATCHED | ads={intel.ads_platform}, traffic={intel.estimated_traffic_tier}",
+        duration_ms=0,
+    )
+    db.add(audit)
+    db.commit()
+
+    return schemas.SpyAnalysisResponse(
+        success=True,
+        lead_name=lead.name,
+        intel=schemas.CompetitorIntelResponse.model_validate(intel),
+        rag_indexed=True,
+        message=f"Análise completa para '{lead.name}'. Insights indexados no RAG.",
+    )

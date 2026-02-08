@@ -388,3 +388,56 @@ class AuditLogResponse(BaseModel):
     user_agent: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# SCHEMAS: SPY MODULE — Inteligência Competitiva (v1.2)
+# ============================================
+
+class AdsPlatformEnum(str, Enum):
+    """Plataformas de anúncios suportadas."""
+    google_ads = "Google Ads"
+    meta_ads = "Meta Ads"
+    linkedin_ads = "LinkedIn Ads"
+    tiktok_ads = "TikTok Ads"
+    none = "Nenhum detectado"
+
+
+class TrafficTierEnum(str, Enum):
+    """Faixas estimadas de tráfego."""
+    low = "low"
+    medium = "medium"
+    high = "high"
+    very_high = "very_high"
+
+
+class SpyRequest(BaseModel):
+    """Payload para disparar análise de espionagem competitiva."""
+    website_url: Optional[str] = Field(None, description="URL do site do lead para análise")
+    force_refresh: bool = Field(False, description="Forçar re-análise mesmo se já existir")
+
+
+class CompetitorIntelResponse(BaseModel):
+    """Resposta com dados de inteligência competitiva."""
+    id: UUID
+    lead_id: UUID
+    competitor_name: str
+    website_url: Optional[str] = None
+    ads_platform: Optional[str] = None
+    estimated_traffic_tier: Optional[str] = None
+    tech_stack: Optional[str] = None
+    market_sentiment: Optional[float] = None
+    analysis_summary: Optional[str] = None
+    last_spy_at: datetime
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SpyAnalysisResponse(BaseModel):
+    """Resposta completa de uma análise Spy."""
+    success: bool
+    lead_name: str
+    intel: CompetitorIntelResponse
+    rag_indexed: bool = False
+    message: str = ""
